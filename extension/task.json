@@ -1,0 +1,51 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AArnott/vso-agent-tasks/9b41d803a/tasks.schema.json",
+    "id": "7f2b0052-ae8e-4820-9de2-6b00afb0b0ba",
+    "name": "package-license-scanner",
+    "friendlyName": "Package License Scanner",
+    "description": "Nuget Package License Scanner, Powered data provided by Nuget Api",
+    "helpMarkDown": "[More Information] \n Version:1.0.0",
+    "category": "Test",
+    "visibility": [
+        "Build",
+        "Release"
+    ],
+    "runsOn": [
+        "Agent",
+        "MachineGroup"
+    ],
+    "author": "Matt Mercan",
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
+    },
+    "demands": [
+        "npm"
+    ],
+    "minimumAgentVersion": "1.92.0",
+    "groups": [{
+        "name": "advanced",
+        "displayName": "Advanced Settings",
+        "isExpanded": false
+    }],
+    "inputs": [{
+        "name": "fileName",
+        "type": "filePath",
+        "label": "Location",
+        "required": true,
+        "defaultValue": "",
+        "helpMarkDown": "Select sln, csproj or vsproj file"
+    }],
+    "dataSourceBindings": [],
+    "instanceNameFormat": "Package License Scanner",
+    "execution": {
+        "Node": {
+            "target": "app.js",
+            "argumentFormat": ""
+        }
+    },
+    "messages": {
+
+    }
+}

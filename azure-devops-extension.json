@@ -1,0 +1,27 @@
+{
+    "manifestVersion": 1,
+    "id": "nugetPackagelicenseScanner",
+    "publisher": "mrtmrcn",
+    "version": "1.0.0",
+    "name": "lICENSE Index",
+    "description": "Azure DevOps Extension",
+    "categories": [
+        "Azure Repos",
+        "Azure Boards",
+        "Azure Pipelines",
+        "Azure Test Plans",
+        "Azure Artifacts"
+    ],
+    "targets": [{
+        "id": "Microsoft.VisualStudio.Services"
+    }],
+    "files": [{
+            "path": "static",
+            "addressable": true
+        },
+        {
+            "path": "dist",
+            "addressable": true
+        }
+    ]
+}

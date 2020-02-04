@@ -1,0 +1,30 @@
+{
+	"manifestVersion": 1,
+	"id": "nugetPackagelicenseScanner",
+	"version": "1.0.0",
+	"name": "Nuget package license scanner",
+	"description": "Nuget package license scanner for .Net projects",
+	"publisher": "mmercan2",
+	"targets": [{
+		"id": "Microsoft.VisualStudio.Services"
+	}],
+	"icons": {
+		"default": "extension-icon.png"
+	},
+	"categories": [
+		"Azure Pipelines"
+	],
+	"files": [{
+		"path": "extension"
+	}],
+	"contributions": [{
+		"id": "nuget-scanner",
+		"type": "ms.vss-distributed-task.task",
+		"targets": [
+			"ms.vss-distributed-task.tasks"
+		],
+		"properties": {
+			"name": "extension"
+		}
+	}]
+}

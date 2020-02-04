@@ -1,0 +1,37 @@
+{
+  "name": "ossindex-azure-pipelines-task",
+  "version": "1.0.0",
+  "description": "OSS Index",
+  "keywords": [
+    "extensions",
+    "Azure DevOps",
+    "Visual Studio Team Services"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "compile": "npm run clean && webpack --mode production",
+    "compile:dev": "npm run clean && webpack --mode development",
+    "build": "npm run compile",
+    "build:dev": "npm run compile:dev && npm run postbuild",
+    "postbuild": "npm run package-extension -- --rev-version",
+    "tsc": "tsc app.ts --lib es2015",
+    "package-extension": "tfx extension create --manifests azure-devops-extension.json",
+    "publish-extension": "tfx extension publish --manifests azure-devops-extension.json"
+  },
+  "dependencies": {
+    "@types/node": "^7.0.0",
+    "@types/request-promise": "~4.1.41",
+    "@types/fs-extra": "5.0.2",
+    "azure-pipelines-task-lib": "^2.9.3",
+    "q": "^1.5.1",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
+    "xml2js": "^0.4.23",
+    "fs-extra": "7.0.1"
+  }
+}
