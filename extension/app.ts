@@ -57,7 +57,7 @@ async function run() {
         packageList.push(key);
         console.log(`${key}`)
     }
-    // await analyzeAllPackages(packageList);
+    await analyzeAllPackages(packageList);
 
     for (let prj in projectlist) {
         for (let pck in projectlist[prj].packages) {
@@ -81,7 +81,7 @@ async function run() {
     console.log(`shouldTaskFails: ${shouldTaskFails}`)
 
 
-    //await publishAnalysis(projectlist);
+    // await publishAnalysis(projectlist);
 }
 
 function analyzeSolution(slnLocation: string): string[] {
@@ -117,20 +117,19 @@ function analyzeProject(prjLocation: string): string[] {
             return;
         }
         parser.parseString(line, (err: any, result: any) => {
-            let coordinate = "pkg:nuget/";
+            let coordinate = "";//"https://api.nuget.org/v3-flatcontainer/";
             // "pkg:nuget/EnterpriseLibrary.Common@6.0.1304"
+            // https://api.nuget.org/v3-flatcontainer/Polly/7.1.0/Polly.nuspec
             if (result.PackageReference) {
                 if (result.PackageReference.$.Include) {
-                    coordinate += result.PackageReference.$.Include + "@"
+                    //coordinate += result.PackageReference.$.Include + "/"
                     if (result.PackageReference.$.Version) {
-                        coordinate += result.PackageReference.$.Version
-
+                        // coordinate += result.PackageReference.$.Version
+                        coordinate = `https://api.nuget.org/v3-flatcontainer/${result.PackageReference.$.Include}/${result.PackageReference.$.Version}/${result.PackageReference.$.Include}.nuspec`
                     } else {
                         console.warn(result.PackageReference.$.Include + "Package doesn't have version number");
                     }
                 }
-                // console.log(i + " : " + coordinate);
-
                 if (!globalPackageList[coordinate]) {
                     globalPackageList[coordinate] = {};
                 }
@@ -143,66 +142,38 @@ function analyzeProject(prjLocation: string): string[] {
     return packages;
 }
 
-function finddepjson(prjLocation: string): string[] {
-    let folder = path.dirname(prjLocation)
-    let allPaths: string[] = tl.find(folder);
-    let filteredPath = allPaths.filter((itemPath: string) => itemPath.endsWith(".deps.json"));
-    console.info(filteredPath);
-    return filteredPath;
-}
-
-function analyzeDepsjson(prjLocation: string): string[] {
-    let packages: any = {};
-    let deps = finddepjson(prjLocation);
-    deps.forEach((dep) => {
-        let numberoflibraries = 0;
-
-        let filecontent = fs.readFileSync(dep, 'utf8');
-        let content = JSON.parse(filecontent);
-        if (content.libraries) {
-            for (let key in content.libraries) {
-                if (content.libraries.hasOwnProperty(key)) {
-                    numberoflibraries++;
-                    let coordinate = 'pkg:nuget/' + key.replace('/', '@');
-                    if (!packages[coordinate]) {
-                        packages[coordinate] = {};
-                    }
-                    if (!globalPackageList[coordinate]) {
-                        globalPackageList[coordinate] = {};
-                    }
-                }
-            }
-        }
-        console.log(`${dep} >> ${numberoflibraries} package found`);
-    });
-    return packages;
-}
+// #########################################
 
 async function analyzeAllPackages(packagecoordinates: string[]): Promise<any> {
-    let pageitem = 127;
-    let allpages = [];
-    let totalpageNumber = Math.ceil(packagecoordinates.length / pageitem);
+    //let pageitem = 127;
+    //let allpages = [];
+    //let totalpageNumber = Math.ceil(packagecoordinates.length / pageitem);
+    // for (let index = 0; index < totalpageNumber; index++) {
+    //     let paged = paginate(packagecoordinates, pageitem, index)
+    //     allpages.push(paged);
+    //     try {
+    //         await analyzePackages(paged);
+    //     } catch (error) {
+    //         console.log(`catch: ${error}`)
+    //     }
+    //}
+    // return allpages;
 
-    for (let index = 0; index < totalpageNumber; index++) {
-        let paged = paginate(packagecoordinates, pageitem, index)
-        allpages.push(paged);
-
+    packagecoordinates.forEach(async (pack) => {
         try {
-            await analyzePackages(paged);
+            await analyzePackages(pack);
         } catch (error) {
             console.log(`catch: ${error}`)
         }
 
-
-    }
-    return allpages;
+    });
 }
 
-function analyzePackages(packagecoordinates: string[]) {
+function analyzePackages(pack: string) {
     return new Promise((resolve, reject) => {
-        request.post("https://ossindex.sonatype.org/api/v3/component-report",
-            { json: { coordinates: packagecoordinates } }
-            , (error, res, body: IPackage[]) => {
+        request.get(pack,
+            // { json: { coordinates: packagecoordinates } }
+            (error, res, body: IPackage[]) => {
                 if (error) {
                     console.error(error)
                     reject(error);
@@ -210,9 +181,11 @@ function analyzePackages(packagecoordinates: string[]) {
                 }
                 console.log(`statusCode: ${res.statusCode}`)
                 if (res.statusCode == 200) {
-                    body.forEach(pck => {
-                        extractpackagedata(pck);
-                    });
+                    console.error(body)
+                    // body.forEach(pck => {
+                    //     console.error(pck)
+                    //     // extractpackagedata(pck);
+                    // });
                     resolve(body);
                 } else {
                     reject(body);
@@ -306,6 +279,46 @@ function consolepackageres(item: any) {
     }
 
 
+}
+
+
+
+
+// ##############################################3
+
+function finddepjson(prjLocation: string): string[] {
+    let folder = path.dirname(prjLocation)
+    let allPaths: string[] = tl.find(folder);
+    let filteredPath = allPaths.filter((itemPath: string) => itemPath.endsWith(".deps.json"));
+    console.info(filteredPath);
+    return filteredPath;
+}
+
+function analyzeDepsjson(prjLocation: string): string[] {
+    let packages: any = {};
+    let deps = finddepjson(prjLocation);
+    deps.forEach((dep) => {
+        let numberoflibraries = 0;
+
+        let filecontent = fs.readFileSync(dep, 'utf8');
+        let content = JSON.parse(filecontent);
+        if (content.libraries) {
+            for (let key in content.libraries) {
+                if (content.libraries.hasOwnProperty(key)) {
+                    numberoflibraries++;
+                    let coordinate = 'pkg:nuget/' + key.replace('/', '@');
+                    if (!packages[coordinate]) {
+                        packages[coordinate] = {};
+                    }
+                    if (!globalPackageList[coordinate]) {
+                        globalPackageList[coordinate] = {};
+                    }
+                }
+            }
+        }
+        console.log(`${dep} >> ${numberoflibraries} package found`);
+    });
+    return packages;
 }
 
 run();
