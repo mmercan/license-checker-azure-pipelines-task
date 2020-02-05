@@ -1,29 +1,28 @@
 import tl = require('azure-pipelines-task-lib/task');
-import { IPackage, IVulnerability, IProjectReport } from './models'
+import { IPackage, IProjectReport } from './models'
 
 export default class Analysis {
     defaultWorkingDirectory = "";
     status = 'NONE';
-    vulnerableProjects: any = {};
+    licenseProjects: any = {};
     htmlcontent = "";
     constructor(private projects: IProjectReport) {
 
         this.defaultWorkingDirectory = tl.getVariable("System.DefaultWorkingDirectory") + "\\";
-        this.getVulnerableProjects();
+        this.getlicenseProjects();
         this.htmlcontent = this.getHtmlAnalysisReport();
 
         //let stringgg = JSON.stringify(this.vulnerableProjects);
         //dconsole.info(this.htmlcontent);
     }
 
-    getVulnerableProjects() {
-        //var vulnerableProjects: any = {};
+    getlicenseProjects() {
         this.status = 'OK';
         for (let prj in this.projects) {
             var prjshort = prj.replace(this.defaultWorkingDirectory, "");
             for (let pck in this.projects[prj].packages) {
-                if (this.projects[prj].packages[pck].vulnerabilities && this.projects[prj].packages[pck].vulnerabilities.length > 0) {
-                    this.vulnerableProjects[prjshort] = this.projects[prj].packages[pck];
+                if (this.projects[prj].packages[pck].license) {
+                    this.licenseProjects[prjshort] = this.projects[prj].packages[pck];
                     this.status = "WARN";
                 }
             };
@@ -32,7 +31,7 @@ export default class Analysis {
 
     getHtmlAnalysisReport(): string {
 
-        const qgStyle = `background-color: ${this.getvulnerabilityColor()};
+        const qgStyle = `background-color: ${this.getlicenseColor()};
         padding: 4px 12px;
         color: #fff;
         letter-spacing: 0.02em;
@@ -53,12 +52,14 @@ export default class Analysis {
             <dl>`
 
             for (let pck in this.projects[prj].packages) {
-                if (this.projects[prj].packages[pck].vulnerabilities && this.projects[prj].packages[pck].vulnerabilities.length > 0) {
-                    html += `<dt>${pck}</dt>`;
+                if (this.projects[prj].packages[pck]) {
+                    html += `<dt>${this.projects[prj].packages[pck].name} ${this.projects[prj].packages[pck].version}</dt>`;
 
-                    this.projects[prj].packages[pck].vulnerabilities.forEach((vul: IVulnerability) => {
-                        html += `<dd> <strong> ${vul.severity}  </strong> ${vul.description}</dd>`;
-                    });
+                    if (this.projects[prj].packages[pck].license && this.projects[prj].packages[pck].license.found) {
+                        html += `<dd> <strong> ${this.projects[prj].packages[pck].license.licenseType}  </strong> : <a href="${this.projects[prj].packages[pck].license.licenseUrl}" target="_blank">${this.projects[prj].packages[pck].license.licenseUrl}</a></dd>`;
+                    } else {
+                        html += `<dd> license info not found</dd>`;
+                    }
                 }
             }
             html += `</dl>`;
@@ -69,7 +70,7 @@ export default class Analysis {
 
     }
 
-    private getvulnerabilityColor() {
+    private getlicenseColor() {
         switch (this.status) {
             case 'OK':
                 return '#00aa00';

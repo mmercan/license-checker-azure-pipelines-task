@@ -5,7 +5,7 @@ import trm = require('azure-pipelines-task-lib/toolrunner');
 import fs = require('fs-extra');
 import path = require('path');
 import Analysis from './Analysis'
-import { IPackage, IVulnerability, IProjectReport } from './models'
+import { IPackage, IProjectReport } from './models'
 
 
 export default async function publishAnalysis(projects: IProjectReport) {
@@ -18,12 +18,12 @@ export default async function publishAnalysis(projects: IProjectReport) {
 
 
 export function publishBuildSummary(summary: string) {
-    uploadBuildSummary(saveBuildSummary(summary), `Nuget Analysis Report`);
+    uploadBuildSummary(saveBuildSummary(summary), `Nuget License Report`);
 }
 
 
 export function saveBuildSummary(summary: string): string {
-    const filePath = path.join(getStagingDirectory(), 'nugetBuildSummary.md');
+    const filePath = path.join(getStagingDirectory(), 'nugetlicenseBuildSummary.html');
     fs.writeFileSync(filePath, summary);
     tl.debug(`[SQ] Summary saved at: ${filePath}`);
     return filePath;
